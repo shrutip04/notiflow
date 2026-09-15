@@ -19,6 +19,7 @@ public class NotificationService {
 
     private final NotificationRepository notificationRepository;
     private final UserRepository userRepository;
+    private final DecisionService decisionService;
 
     public NotificationResponse submitNotification(NotificationRequest request) {
         User user = getCurrentUser();
@@ -32,8 +33,8 @@ public class NotificationService {
 
         notificationRepository.save(notification);
 
-        // AI classification + Decision Engine will hook in here in Phase 9/10 —
-        // for now we just persist it as PENDING.
+        decisionService.processNotification(notification); // NEW — runs the full pipeline
+        notificationRepository.save(notification); // persist the status/category updates made during processing
 
         return toResponse(notification);
     }
