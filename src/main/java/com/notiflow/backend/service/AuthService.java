@@ -5,6 +5,7 @@ import com.notiflow.backend.dto.request.RegisterRequest;
 import com.notiflow.backend.dto.response.LoginResponse;
 import com.notiflow.backend.entity.Preference;
 import com.notiflow.backend.entity.User;
+import com.notiflow.backend.exception.DuplicateResourceException;
 import com.notiflow.backend.repository.PreferenceRepository;
 import com.notiflow.backend.repository.UserRepository;
 import com.notiflow.backend.security.JwtService;
@@ -26,7 +27,7 @@ public class AuthService {
 
     public LoginResponse register(RegisterRequest request) {
         if (userRepository.existsByEmail(request.getEmail())) {
-            throw new IllegalArgumentException("Email already registered");
+            throw new DuplicateResourceException("Email already registered");
         }
 
         User user = new User();
