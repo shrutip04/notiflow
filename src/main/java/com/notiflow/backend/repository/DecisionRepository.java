@@ -2,8 +2,10 @@ package com.notiflow.backend.repository;
 
 import com.notiflow.backend.entity.Decision;
 import org.springframework.data.jpa.repository.JpaRepository;
+import java.util.List;
 import java.util.Optional;
 
 public interface DecisionRepository extends JpaRepository<Decision, Long> {
     Optional<Decision> findByNotificationId(Long notificationId);
+    List<Decision> findByNotification_UserIdOrderByCreatedAtDesc(Long userId);
 }

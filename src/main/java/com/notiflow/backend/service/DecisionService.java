@@ -10,6 +10,7 @@ import com.notiflow.backend.exception.ResourceNotFoundException;
 import com.notiflow.backend.repository.ContextSessionRepository;
 import com.notiflow.backend.repository.DecisionRepository;
 import com.notiflow.backend.repository.PreferenceRepository;
+import com.notiflow.backend.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -25,6 +26,7 @@ public class DecisionService {
     private final ContextSessionRepository contextSessionRepository;
     private final PreferenceRepository preferenceRepository;
     private final DecisionRepository decisionRepository;
+    private final UserRepository userRepository;
 
     public Decision processNotification(Notification notification) {
         User user = notification.getUser();
@@ -63,7 +65,12 @@ public class DecisionService {
     }
 
     public List<DecisionResponse> getAllDecisions() {
-        return decisionRepository.findAll().stream()
+        String email = com.notiflow.backend.security.SecurityUtils.getCurrentUserEmail();
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+
+        return decisionRepository.findByNotification_UserIdOrderByCreatedAtDesc(user.getId())
+                .stream()
                 .map(this::toResponse)
                 .toList();
     }
