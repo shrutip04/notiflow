@@ -3,25 +3,28 @@ package com.notiflow.backend.decision;
 import com.notiflow.backend.entity.ContextSession;
 import com.notiflow.backend.entity.Decision;
 import com.notiflow.backend.entity.Preference;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 @Component
+@RequiredArgsConstructor
 public class DecisionEngine {
+
+    private final InterruptibilityEngine interruptibilityEngine;
+    private final InterruptionCostEngine interruptionCostEngine;
 
     private static final double RELEVANCE_WEIGHT = 0.5;
     private static final double URGENCY_WEIGHT = 0.5;
     private static final double MARGIN = 0.15;
-
-    private static final double FOCUS_MODE_BOOST = 0.2;
-    private static final double MAX_FOCUS_DURATION_BOOST = 0.2;
     private static final double PREFERENCE_PENALTY = 0.3;
     private static final double HIGH_PRIORITY_BONUS = 0.1;
     private static final double HIGH_URGENCY_THRESHOLD = 0.8;
 
     public DecisionResult evaluate(NotificationSignal signal, ContextSession context, Preference preference) {
-        double priorityScore = calculatePriorityScore(signal);
-        double interruptionCost = calculateInterruptionCost(context, preference);
+        InterruptibilityResult interruptibility = interruptibilityEngine.evaluate(context);
+        double interruptionCost = interruptionCostEngine.evaluate(interruptibility, preference);
 
+        double priorityScore = calculatePriorityScore(signal);
         priorityScore = applyPreferenceAdjustments(priorityScore, signal, preference);
 
         Decision.DecisionType decisionType;
@@ -29,13 +32,13 @@ public class DecisionEngine {
 
         if (priorityScore >= interruptionCost + MARGIN) {
             decisionType = Decision.DecisionType.ALLOW;
-            reason = "High priority relative to current interruption cost";
+            reason = "High priority relative to interruption cost (" + interruptibility.getReason() + ")";
         } else if (priorityScore <= interruptionCost - MARGIN) {
             decisionType = Decision.DecisionType.BLOCK;
-            reason = "Low priority while interruption cost is high";
+            reason = "Low priority while user is " + interruptibility.getLevel() + " interruptibility (" + interruptibility.getReason() + ")";
         } else {
             decisionType = Decision.DecisionType.DELAY;
-            reason = "Priority and interruption cost are close; deferring for a better moment";
+            reason = "Priority and interruption cost are close; deferring (" + interruptibility.getReason() + ")";
         }
 
         return new DecisionResult(decisionType, signal.getRelevance(), signal.getUrgency(), interruptionCost, reason);
@@ -43,23 +46,6 @@ public class DecisionEngine {
 
     private double calculatePriorityScore(NotificationSignal signal) {
         return (signal.getRelevance() * RELEVANCE_WEIGHT) + (signal.getUrgency() * URGENCY_WEIGHT);
-    }
-
-    private double calculateInterruptionCost(ContextSession context, Preference preference) {
-        if (context.isIdle()) {
-            return 0.1;
-        }
-
-        double baseCost = switch (context.getActivityLevel()) {
-            case LOW -> 0.2;
-            case MEDIUM -> 0.5;
-            case HIGH -> 0.8;
-        };
-
-        double focusModeBoost = preference.isFocusModeEnabled() ? FOCUS_MODE_BOOST : 0.0;
-        double durationBoost = Math.min(context.getFocusDurationMinutes() / 120.0, MAX_FOCUS_DURATION_BOOST);
-
-        return Math.min(baseCost + focusModeBoost + durationBoost, 1.0);
     }
 
     private double applyPreferenceAdjustments(double priorityScore, NotificationSignal signal, Preference preference) {
