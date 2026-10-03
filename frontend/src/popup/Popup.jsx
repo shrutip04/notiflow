@@ -1,6 +1,6 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useAuth } from '../context/AuthContext'
-import { getCurrentContext } from '../services/contextService'
+import { getCurrentContext, getSharingEnabled, setSharingEnabled, getTrackerStatus } from '../services/contextService'
 import { getPreferences } from '../services/preferencesService'
 import { getSummary } from '../services/dashboardService'
 import { errorMessage } from '../services/api'
@@ -10,9 +10,10 @@ import AuthForm from '../components/AuthForm'
 import StateRing from '../components/StateRing'
 import TabBar from '../components/TabBar'
 import EmptyState from '../components/EmptyState'
+import ContextCard from '../components/ContextCard'
+import FeedTab from '../components/FeedTab'
 
 const COMING = {
-    FEED: ['Feed', 'Phase 3 — notifications joined with their ALLOW / DELAY / BLOCK decisions.'],
     SUMMARY: ['Summary', 'Phase 4 — what was handled while you were focused.'],
     VOICE: ['Voice', 'Phase 7 — speech to text with a confirm step. No service is connected to send replies yet.'],
     INSIGHTS: ['Insights', 'Phase 5 — interruption stats from your decision history.'],
@@ -22,25 +23,43 @@ function Dashboard() {
     const { auth, logout } = useAuth()
     const [tab, setTab] = useState('FEED')
     const [data, setData] = useState({ context: null, preferences: null, summary: null })
+    const [sharing, setSharing] = useState(true)
+    const [status, setStatus] = useState(null)
     const [error, setError] = useState('')
     const [loading, setLoading] = useState(true)
 
-    const load = useCallback(async () => {
-        setError('')
-        const [ctx, prefs, summary] = await Promise.allSettled([getCurrentContext(), getPreferences(), getSummary()])
-        const failed = [ctx, prefs, summary].find((r) => r.status === 'rejected')
-        if (failed) setError(errorMessage(failed.reason))
-        setData({
-            context: ctx.value ?? null,
-            preferences: prefs.value ?? null,
-            summary: summary.value ?? null,
-        })
-        setLoading(false)
-    }, [])
+    const [reloadKey, setReloadKey] = useState(0)
+    const reload = () => setReloadKey((k) => k + 1)
 
-    useEffect(() => { load() }, [load])
+    useEffect(() => {
+        let cancelled = false
+        ;(async () => {
+            const [[ctx, prefs, summary], enabled, trackerStatus] = await Promise.all([
+                Promise.allSettled([getCurrentContext(), getPreferences(), getSummary()]),
+                getSharingEnabled(),
+                getTrackerStatus(),
+            ])
+            if (cancelled) return
+            const failed = [ctx, prefs, summary].find((r) => r.status === 'rejected')
+            setError(failed ? errorMessage(failed.reason) : '')
+            setData({
+                context: ctx.value ?? null,
+                preferences: prefs.value ?? null,
+                summary: summary.value ?? null,
+            })
+            setSharing(enabled)
+            setStatus(trackerStatus)
+            setLoading(false)
+        })()
+        return () => { cancelled = true }
+    }, [reloadKey])
 
-    const [title, text] = COMING[tab]
+    async function toggleSharing(enabled) {
+        setSharing(enabled)
+        await setSharingEnabled(enabled)
+    }
+
+    const coming = COMING[tab]
     return (
         <>
             <Header name={auth.name} onLogout={logout} />
@@ -48,10 +67,11 @@ function Dashboard() {
                 <StateRing stateKey={deriveState(data.context, data.preferences)} summary={data.summary} />
             )}
             {error && (
-                <p className="error pad">{error} <button className="link" onClick={load}>Retry</button></p>
+                <p className="error pad">{error} <button className="link" onClick={reload}>Retry</button></p>
             )}
+            {!loading && <ContextCard context={data.context} enabled={sharing} onToggle={toggleSharing} status={status} />}
             <TabBar active={tab} onChange={setTab} />
-            <EmptyState title={title}>{text}</EmptyState>
+            {tab === 'FEED' ? <FeedTab onChanged={reload} /> : <EmptyState title={coming[0]}>{coming[1]}</EmptyState>}
         </>
     )
 }

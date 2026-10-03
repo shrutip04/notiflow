@@ -1,10 +1,11 @@
 import axios from 'axios'
 import { getItem, removeItem } from './storage'
+import { API_BASE_URL, AUTH_KEY } from './config'
 
-export const AUTH_KEY = 'notiflow_auth' // { token, email, name }
+export { AUTH_KEY }
 
 const api = axios.create({
-    baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080',
+    baseURL: API_BASE_URL,
     timeout: 10000,
     headers: { 'Content-Type': 'application/json' },
 })

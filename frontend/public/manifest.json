@@ -1,0 +1,13 @@
+{
+  "manifest_version": 3,
+  "name": "Notiflow",
+  "version": "0.1.0",
+  "description": "Context-aware communication layer: fewer interruptions, only what matters.",
+  "action": {
+    "default_title": "Notiflow",
+    "default_popup": "popup.html"
+  },
+  "background": { "service_worker": "background.js", "type": "module" },
+  "permissions": ["storage", "tabs", "idle", "alarms"],
+  "host_permissions": ["http://localhost:8080/*"]
+}

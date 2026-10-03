@@ -1,4 +1,4 @@
-export const TABS = ['FEED', 'SUMMARY', 'VOICE', 'INSIGHTS']
+const TABS = ['FEED', 'SUMMARY', 'VOICE', 'INSIGHTS']
 
 export default function TabBar({ active, onChange }) {
     return (
