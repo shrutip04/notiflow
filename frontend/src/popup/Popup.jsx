@@ -14,6 +14,7 @@ import ContextCard from '../components/ContextCard'
 import FeedTab from '../components/FeedTab'
 import SummaryTab from '../components/SummaryTab'
 import InsightsTab from '../components/InsightsTab'
+import PreferencesPanel from '../components/PreferencesPanel'
 
 const COMING = {
     VOICE: ['Voice', 'Phase 7 — speech to text with a confirm step. No service is connected to send replies yet.'],
@@ -23,12 +24,12 @@ function Dashboard() {
     const { auth, logout } = useAuth()
     const [tab, setTab] = useState('FEED')
     const [feedFilter, setFeedFilter] = useState('ALL')
+    const [showSettings, setShowSettings] = useState(false)
     const [data, setData] = useState({ context: null, preferences: null, summary: null })
     const [sharing, setSharing] = useState(true)
     const [status, setStatus] = useState(null)
     const [error, setError] = useState('')
     const [loading, setLoading] = useState(true)
-
     const [reloadKey, setReloadKey] = useState(0)
     const reload = () => setReloadKey((k) => k + 1)
 
@@ -60,22 +61,28 @@ function Dashboard() {
         await setSharingEnabled(enabled)
     }
 
-    const coming = COMING[tab]
+    const coming = COMING[tab] // only tabs not built yet
     return (
         <>
-            <Header name={auth.name} onLogout={logout} />
+            <Header name={auth.name} onLogout={logout} onSettings={() => setShowSettings((v) => !v)} settingsOpen={showSettings} />
             {loading ? <p className="muted pad">Connecting…</p> : (
                 <StateRing stateKey={deriveState(data.context, data.preferences)} summary={data.summary} />
             )}
             {error && (
                 <p className="error pad">{error} <button className="link" onClick={reload}>Retry</button></p>
             )}
-            {!loading && <ContextCard context={data.context} enabled={sharing} onToggle={toggleSharing} status={status} />}
-            <TabBar active={tab} onChange={setTab} />
-            {tab === 'FEED' && <FeedTab onChanged={reload} initialFilter={feedFilter} />}
-            {tab === 'SUMMARY' && <SummaryTab onReview={() => { setFeedFilter('ALLOW'); setTab('FEED') }} />}
-            {tab === 'INSIGHTS' && <InsightsTab context={data.context} />}
-            {coming && <EmptyState title={coming[0]}>{coming[1]}</EmptyState>}
+            {showSettings ? (
+                <PreferencesPanel preferences={data.preferences} onSaved={reload} onBack={() => setShowSettings(false)} />
+            ) : (
+                <>
+                    {!loading && <ContextCard context={data.context} enabled={sharing} onToggle={toggleSharing} status={status} />}
+                    <TabBar active={tab} onChange={setTab} />
+                    {tab === 'FEED' && <FeedTab onChanged={reload} initialFilter={feedFilter} />}
+                    {tab === 'SUMMARY' && <SummaryTab onReview={() => { setFeedFilter('ALLOW'); setTab('FEED') }} />}
+                    {tab === 'INSIGHTS' && <InsightsTab context={data.context} />}
+                    {coming && <EmptyState title={coming[0]}>{coming[1]}</EmptyState>}
+                </>
+            )}
         </>
     )
 }

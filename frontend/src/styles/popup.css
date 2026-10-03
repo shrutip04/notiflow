@@ -83,3 +83,13 @@ button { font: inherit; cursor: pointer; }
 .cat-bar { flex: 1; height: 5px; background: var(--line); border-radius: 3px; overflow: hidden; }
 .cat-bar > div { height: 100%; background: var(--blue); }
 .ins .sum-grid span { font-size: 8px; }
+.header-actions { display: flex; align-items: center; gap: 10px; }
+.icon { background: none; border: 1px solid transparent; border-radius: 6px; color: var(--muted); font-size: 15px; padding: 2px 6px; }
+.icon:hover, .icon.active { color: var(--text); border-color: var(--line); }
+.prefs { margin-top: 12px; }
+.prefs-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+.row { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 9px 10px; margin-bottom: 6px; background: var(--panel); border: 1px solid var(--line); border-radius: 8px; cursor: pointer; }
+.row-text { display: flex; flex-direction: column; }
+.row-label { font-weight: 600; }
+.row input { width: auto; margin: 0; accent-color: var(--green); }
+.prefs-hours { margin-top: 8px; }

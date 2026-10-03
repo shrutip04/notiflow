@@ -1,4 +1,4 @@
-export default function Header({ name, onLogout }) {
+export default function Header({ name, onLogout, onSettings, settingsOpen }) {
     return (
         <header className="header">
             <div>
@@ -6,7 +6,10 @@ export default function Header({ name, onLogout }) {
                 <div className="sub">ATTENTION ENGINE</div>
             </div>
             {name && (
-                <button className="link" onClick={onLogout} title={`Signed in as ${name}`}>Log out</button>
+                <div className="header-actions">
+                    <button className={settingsOpen ? 'icon active' : 'icon'} onClick={onSettings} title="Preferences">⚙</button>
+                    <button className="link" onClick={onLogout} title={`Signed in as ${name}`}>Log out</button>
+                </div>
             )}
         </header>
     )
