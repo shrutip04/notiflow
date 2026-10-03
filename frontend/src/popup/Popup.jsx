@@ -13,10 +13,10 @@ import EmptyState from '../components/EmptyState'
 import ContextCard from '../components/ContextCard'
 import FeedTab from '../components/FeedTab'
 import SummaryTab from '../components/SummaryTab'
+import InsightsTab from '../components/InsightsTab'
 
 const COMING = {
     VOICE: ['Voice', 'Phase 7 — speech to text with a confirm step. No service is connected to send replies yet.'],
-    INSIGHTS: ['Insights', 'Phase 5 — interruption stats from your decision history.'],
 }
 
 function Dashboard() {
@@ -74,6 +74,7 @@ function Dashboard() {
             <TabBar active={tab} onChange={setTab} />
             {tab === 'FEED' && <FeedTab onChanged={reload} initialFilter={feedFilter} />}
             {tab === 'SUMMARY' && <SummaryTab onReview={() => { setFeedFilter('ALLOW'); setTab('FEED') }} />}
+            {tab === 'INSIGHTS' && <InsightsTab context={data.context} />}
             {coming && <EmptyState title={coming[0]}>{coming[1]}</EmptyState>}
         </>
     )

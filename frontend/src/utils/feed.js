@@ -32,6 +32,7 @@ export function buildFeed(notifications, decisions) {
                 decision: d?.decisionType ?? null, // ALLOW | DELAY | BLOCK, or null if not processed
                 priority: priorityLabel(score),
                 reason: d?.reason ?? null,
+                cost: d?.interruptionCost ?? null, // 0-1: how bad a moment it was to interrupt
                 explanation: d?.aiExplanation ?? null,
             }
         })

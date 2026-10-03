@@ -75,3 +75,11 @@ button { font: inherit; cursor: pointer; }
 .sum-label { margin: 6px 0 4px; }
 .sum-list { margin: 0 0 4px; padding-left: 14px; font-size: 12px; display: flex; flex-direction: column; gap: 3px; }
 .sum-list .when { margin-left: 0; }
+.bar { display: flex; height: 8px; border-radius: 4px; overflow: hidden; background: var(--line); gap: 2px; }
+.seg-ALLOW { background: var(--green); } .seg-DELAY { background: var(--amber); } .seg-BLOCK { background: var(--red); }
+.legend { display: flex; gap: 12px; margin-top: 6px; font-size: 11px; }
+.cat { display: flex; align-items: center; gap: 8px; font-size: 11px; margin-bottom: 4px; }
+.cat > span:first-child { width: 90px; color: var(--text); }
+.cat-bar { flex: 1; height: 5px; background: var(--line); border-radius: 3px; overflow: hidden; }
+.cat-bar > div { height: 100%; background: var(--blue); }
+.ins .sum-grid span { font-size: 8px; }
