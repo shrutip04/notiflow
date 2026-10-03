@@ -1,40 +1,16 @@
-import { useEffect, useState } from 'react'
-import { getNotifications } from '../services/notificationService'
-import { getDecisions } from '../services/decisionService'
-import { errorMessage } from '../services/api'
-import { buildFeed } from '../utils/feed'
+import { useState } from 'react'
+import { useFeed } from '../hooks/useFeed'
 import FeedItem from './FeedItem'
 import TestNotificationForm from './TestNotificationForm'
 import EmptyState from './EmptyState'
 
 const FILTERS = ['ALL', 'ALLOW', 'DELAY', 'BLOCK']
 
-export default function FeedTab({ onChanged }) {
-    const [items, setItems] = useState([])
-    const [loading, setLoading] = useState(true)
-    const [error, setError] = useState('')
-    const [filter, setFilter] = useState('ALL')
+export default function FeedTab({ onChanged, initialFilter = 'ALL' }) {
+    const { items, loading, error, refresh } = useFeed()
+    const [filter, setFilter] = useState(initialFilter)
     const [showTest, setShowTest] = useState(false)
-    const [reloadKey, setReloadKey] = useState(0)
 
-    useEffect(() => {
-        let cancelled = false
-        ;(async () => {
-            try {
-                const [notifications, decisions] = await Promise.all([getNotifications(), getDecisions()])
-                if (cancelled) return
-                setItems(buildFeed(notifications, decisions))
-                setError('')
-            } catch (e) {
-                if (!cancelled) setError(errorMessage(e))
-            } finally {
-                if (!cancelled) setLoading(false)
-            }
-        })()
-        return () => { cancelled = true }
-    }, [reloadKey])
-
-    const refresh = () => { setLoading(true); setReloadKey((k) => k + 1) }
     const handleSent = () => { refresh(); onChanged?.() }
 
     const count = (f) => (f === 'ALL' ? items.length : items.filter((i) => i.decision === f).length)

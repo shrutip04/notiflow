@@ -12,9 +12,9 @@ import TabBar from '../components/TabBar'
 import EmptyState from '../components/EmptyState'
 import ContextCard from '../components/ContextCard'
 import FeedTab from '../components/FeedTab'
+import SummaryTab from '../components/SummaryTab'
 
 const COMING = {
-    SUMMARY: ['Summary', 'Phase 4 — what was handled while you were focused.'],
     VOICE: ['Voice', 'Phase 7 — speech to text with a confirm step. No service is connected to send replies yet.'],
     INSIGHTS: ['Insights', 'Phase 5 — interruption stats from your decision history.'],
 }
@@ -22,6 +22,7 @@ const COMING = {
 function Dashboard() {
     const { auth, logout } = useAuth()
     const [tab, setTab] = useState('FEED')
+    const [feedFilter, setFeedFilter] = useState('ALL')
     const [data, setData] = useState({ context: null, preferences: null, summary: null })
     const [sharing, setSharing] = useState(true)
     const [status, setStatus] = useState(null)
@@ -71,7 +72,9 @@ function Dashboard() {
             )}
             {!loading && <ContextCard context={data.context} enabled={sharing} onToggle={toggleSharing} status={status} />}
             <TabBar active={tab} onChange={setTab} />
-            {tab === 'FEED' ? <FeedTab onChanged={reload} /> : <EmptyState title={coming[0]}>{coming[1]}</EmptyState>}
+            {tab === 'FEED' && <FeedTab onChanged={reload} initialFilter={feedFilter} />}
+            {tab === 'SUMMARY' && <SummaryTab onReview={() => { setFeedFilter('ALLOW'); setTab('FEED') }} />}
+            {coming && <EmptyState title={coming[0]}>{coming[1]}</EmptyState>}
         </>
     )
 }
