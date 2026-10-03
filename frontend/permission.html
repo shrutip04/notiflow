@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <title>Notiflow: microphone access</title>
+    <style>
+        body { font-family: system-ui, sans-serif; background: #0a0d12; color: #e6ebf2; display: grid; place-items: center; height: 100vh; margin: 0; }
+        main { max-width: 380px; text-align: center; }
+        button { padding: 10px 18px; border: 0; border-radius: 6px; background: #3ddc97; color: #04130c; font-weight: 600; cursor: pointer; font-size: 14px; }
+        p { color: #7d8898; line-height: 1.5; }
+    </style>
+</head>
+<body>
+<main>
+    <h2>✦ NOTIFLOW</h2>
+    <p>Voice needs microphone access. Chrome can only ask for it on a normal page, not inside the popup. You only need to do this once.</p>
+    <button id="allow">Allow microphone</button>
+    <p id="result"></p>
+</main>
+<script type="module" src="/src/permission/permission.js"></script>
+</body>
+</html>
